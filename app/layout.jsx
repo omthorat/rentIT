@@ -1,4 +1,6 @@
 import "./globals.css";
+import Navbar from "@/components/Navbar/Navbar";
+import Footer from "@/components/Footer";
 export const metadata = {
   title: "rent It",
   keywords:
@@ -10,7 +12,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
+        <Navbar/>
         <main>{children}</main>
+        <Footer/>
       </body>
     </html>
   );
