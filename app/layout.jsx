@@ -1,6 +1,7 @@
 import "./globals.css";
 import Navbar from "@/components/Navbar/Navbar";
 import Footer from "@/components/Footer";
+import connectDb from "@/config/databaseconection";
 export const metadata = {
   title: "rent It",
   keywords:
@@ -9,12 +10,13 @@ export const metadata = {
     "Discover thousands of rental properties, including apartments, houses, and vacation homes, with rent It. Simplify renting today!",
 };
 export default function RootLayout({ children }) {
+  connectDb();
   return (
     <html lang="en">
       <body>
-        <Navbar/>
+        <Navbar />
         <main>{children}</main>
-        <Footer/>
+        <Footer />
       </body>
     </html>
   );

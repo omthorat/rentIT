@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 const Footer = () => {
   return (
-    <footer className=" fixed bottom-0 w-[100vw] bg-[#4B0082] py-4 mt-auto">
+    <footer className="  w-[99vw] bg-[#4B0082] py-4 overflow-hidden ">
       <div className="container mx-auto  flex flex-col md:flex-row items-center justify-between px-4">
         <div className="mb-4 md:mb-0">
           <Image src={logo} alt="Logo" className="h-8 w-auto" />
