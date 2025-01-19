@@ -76,7 +76,7 @@ const PropertyCard = ({ property }) => {
             </span>
           </div>
           <Link
-            href={`/properties/${property.id}`}
+            href={`/properties/${property._id}`}
             className="h-[36px] bg-[#4B0082] transform transition duration-500 hover:scale-110 text-white px-4 py-2 rounded-lg text-center text-sm">
             Details
           </Link>
