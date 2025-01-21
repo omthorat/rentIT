@@ -1,17 +1,39 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import logo from "@/assets/Images/logo-white.png";
 import defaultProfile from "@/assets/Images/profile.png";
 import Image from "next/image";
 import Link from "next/link";
 import { FaGoogle } from "react-icons/fa";
+// import profileDefault from "@/assets/images/profile.png";
+import { signIn, signOut, useSession, getProviders } from "next-auth/react";
+// import UnreadMessageCount from "./UnreadMessageCount";
 
 const Navbar = () => {
-  const [openLeftMenu, setOpenLeftMenu] = useState(false);
-  const [openProfileMenu, setOpenProfileMenu] = useState(false);
-  const [isUserLogin, setIsUserLogin] = useState(false);
-  const params = usePathname();
+  const { data: session } = useSession();
+  const profileImage = session?.user?.image;
+
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [providers, setProviders] = useState(null);
+
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const setAuthProviders = async () => {
+      const res = await getProviders();
+      setProviders(res);
+    };
+
+    setAuthProviders();
+
+    // NOTE: close mobile menu if the viewport size is changed
+    window.addEventListener("resize", () => {
+      setIsMobileMenuOpen(false);
+    });
+  }, []);
+
   return (
     <nav className="bg-purple-300 border-b border-purple-300">
       <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
@@ -24,9 +46,7 @@ const Navbar = () => {
               className="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
               aria-controls="mobile-menu"
               aria-expanded="false"
-              onClick={() => {
-                setOpenLeftMenu(!openLeftMenu);
-              }}>
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
               <span className="absolute -inset-0.5"></span>
               <span className="sr-only">Open main menu</span>
               <svg
@@ -60,22 +80,22 @@ const Navbar = () => {
                 <Link
                   href="/"
                   className={`${
-                    params === "/" ? "bg-[#4B0082]" : ""
+                    pathname === "/" ? "bg-[#4B0082]" : ""
                   } text-white hover:bg-[#4B0082] transform transition duration-500 hover:scale-110 hover:text-white rounded-md px-3 py-2`}>
                   Home
                 </Link>
                 <Link
                   href="/properties"
                   className={`${
-                    params === "/properties" ? "bg-[#4B0082]" : ""
+                    pathname === "/properties" ? "bg-[#4B0082]" : ""
                   } text-white hover:bg-[#4B0082] transform transition duration-500 hover:scale-110 hover:text-white rounded-md px-3 py-2`}>
                   Properties
                 </Link>
-                {isUserLogin && (
+                {session && (
                   <Link
                     href="/properties/add"
                     className={`${
-                      params === "/properties/add" ? "bg-[#4B0082]" : ""
+                      pathname === "/properties/add" ? "bg-[#4B0082]" : ""
                     } text-white hover:bg-[#4B0082] transform transition duration-500 hover:scale-110 hover:text-white rounded-md px-3 py-2`}>
                     Add Property
                   </Link>
@@ -85,21 +105,27 @@ const Navbar = () => {
           </div>
 
           {/* <!-- Right Side Menu (Logged Out) --> */}
-          {!isUserLogin && (
+          {!session && (
             <div className="hidden md:block md:ml-6">
               <div className="flex items-center">
-                <button className="flex items-center text-white shadow-xl transform transition duration-500 hover:scale-110 hover:bg-[#4B0082] hover:text-white rounded-md px-3 py-2">
-                  <FaGoogle className="text-white mr-2" />
-                  <span>Login or Register</span>
-                </button>
+                {providers &&
+                  Object.values(providers).map((provider) => (
+                    <button
+                      key={provider.name}
+                      onClick={() => signIn(provider.id)}
+                      className="flex items-center text-white hover:bg-[#4B0082] transform transition duration-500 hover:scale-110 hover:text-white rounded-md  px-3 py-2 my-3">
+                      <FaGoogle className="text-white mr-2" />
+                      <span>Login or Register</span>
+                    </button>
+                  ))}
               </div>
             </div>
           )}
 
           {/* <!-- Right Side Menu (Logged In) --> */}
-          {isUserLogin && (
+          {session && (
             <div className="absolute inset-y-0 right-0 flex items-center pr-2 md:static md:inset-auto md:ml-6 md:pr-0">
-              <Link href="messages.html" className="relative group">
+              <Link href="/messages" className="relative group">
                 <button
                   type="button"
                   className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
@@ -119,10 +145,7 @@ const Navbar = () => {
                     />
                   </svg>
                 </button>
-                <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
-                  2
-                  {/* <!-- Replace with the actual number of notifications --> */}
-                </span>
+                {/* <UnreadMessageCount /> */}
               </Link>
               {/* <!-- Profile dropdown button --> */}
               <div className="relative ml-3">
@@ -133,24 +156,24 @@ const Navbar = () => {
                     id="user-menu-button"
                     aria-expanded="false"
                     aria-haspopup="true"
-                    onClick={() => {
-                      setOpenProfileMenu(!openProfileMenu);
-                    }}>
+                    onClick={() => setIsProfileMenuOpen((prev) => !prev)}>
                     <span className="absolute -inset-1.5"></span>
                     <span className="sr-only">Open user menu</span>
                     <Image
                       className="h-8 w-8 rounded-full"
-                      src={defaultProfile}
-                      alt="Profile Image"
+                      src={profileImage || defaultProfile}
+                      alt=""
+                      width={40}
+                      height={40}
                     />
                   </button>
                 </div>
 
                 {/* <!-- Profile dropdown --> */}
-                {openProfileMenu && (
+                {isProfileMenuOpen && (
                   <div
                     id="user-menu"
-                    className=" absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                    className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
                     role="menu"
                     aria-orientation="vertical"
                     aria-labelledby="user-menu-button"
@@ -160,18 +183,28 @@ const Navbar = () => {
                       className="block px-4 py-2 text-sm text-gray-700"
                       role="menuitem"
                       tabIndex="-1"
-                      id="user-menu-item-0">
+                      id="user-menu-item-0"
+                      onClick={() => {
+                        setIsProfileMenuOpen(false);
+                      }}>
                       Your Profile
                     </Link>
                     <Link
-                      href="/properties"
+                      href="/properties/saved"
                       className="block px-4 py-2 text-sm text-gray-700"
                       role="menuitem"
                       tabIndex="-1"
-                      id="user-menu-item-2">
+                      id="user-menu-item-2"
+                      onClick={() => {
+                        setIsProfileMenuOpen(false);
+                      }}>
                       Saved Properties
                     </Link>
                     <button
+                      onClick={() => {
+                        setIsProfileMenuOpen(false);
+                        signOut({ callbackUrl: "/" });
+                      }}
                       className="block px-4 py-2 text-sm text-gray-700"
                       role="menuitem"
                       tabIndex="-1"
@@ -185,40 +218,48 @@ const Navbar = () => {
           )}
         </div>
       </div>
-
-      {/* /* <!-- Mobile menu, show/hide based on menu state. --> */}
-
-      {openLeftMenu && (
-        <div className="" id="mobile-menu">
+      {/* <!-- Mobile menu, show/hide based on menu state. --> */}
+      {isMobileMenuOpen && (
+        <div id="mobile-menu">
           <div className="space-y-1 px-2 pb-3 pt-2">
             <Link
               href="/"
               className={`${
-                params === "/" ? "bg-[#4B0082]" : ""
+                pathname === "/" ? "bg-[#4B0082]" : ""
               } text-white block rounded-md px-3 py-2 text-base font-medium`}>
               Home
             </Link>
             <Link
               href="/properties"
               className={`${
-                params === "/properties" ? "bg-[#4B0082]" : ""
+                pathname === "/properties" ? "bg-black" : ""
               } text-white block rounded-md px-3 py-2 text-base font-medium`}>
               Properties
             </Link>
-            {isUserLogin && (
+            {session && (
               <Link
                 href="/properties/add"
                 className={`${
-                  params === "/properties/add" ? "bg-[#4B0082]" : ""
+                  pathName === "/properties/add" ? "bg-[#4B0082]" : ""
                 } text-white block rounded-md px-3 py-2 text-base font-medium`}>
                 Add Property
               </Link>
             )}
-            {!isUserLogin && (
-              <button className="flex items-center text-white bg-[#4B0082] hover:bg-[#4B0082] hover:text-white rounded-md px-3 py-2 my-5">
-                <i className="fa-brands fa-google mr-2"></i>
-                <span>Login or Register</span>
-              </button>
+            {!session && (
+              <div className="block md:ml-6">
+                <div className="flex items-center">
+                  {providers &&
+                    Object.values(providers).map((provider) => (
+                      <button
+                        key={provider.name}
+                        onClick={() => signIn(provider.id)}
+                        className="flex items-center text-white bg-[#4B0082] hover:bg-[#4B0082] hover:text-white rounded-md px-3 py-2 my-5">
+                        <FaGoogle className="text-white mr-2" />
+                        <span>Login or Register</span>
+                      </button>
+                    ))}
+                </div>
+              </div>
             )}
           </div>
         </div>
