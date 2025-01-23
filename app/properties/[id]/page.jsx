@@ -1,9 +1,11 @@
 import PropertyHeaderImage from "@/components/PropertyHeaderImage";
 import PropertyDetailes from "@/components/PropertyDetail";
 import Property from "@/models/property";
+import PropertyImages from "@/components/PropertyImages";
 import connectDB from "@/config/databaseconection";
 import { FaArrowLeft } from "react-icons/fa";
 import Link from "next/link";
+
 const PropertyPage = async ({ params }) => {
   await connectDB();
   const property = await Property.findById(params.id).lean();
@@ -20,13 +22,14 @@ const PropertyPage = async ({ params }) => {
         </div>
       </section>
 
-      <section class="bg-blue-50">
-        <div class="container m-auto py-10 px-6">
-          <div class="grid grid-cols-1 md:grid-cols-70/30 w-full gap-6">
+      <section className="bg-blue-50">
+        <div className="container m-auto py-10 px-6">
+          <div className="grid grid-cols-1 md:grid-cols-70/30 w-full gap-6">
             <PropertyDetailes property={property} />
           </div>
         </div>
       </section>
+      <PropertyImages images={property.images} />
     </>
   );
 };
