@@ -3,6 +3,8 @@ import AuthProvider from "@/components/AuthProvider";
 import Navbar from "@/components/Navbar/Navbar";
 import Footer from "@/components/Footer";
 import connectDb from "@/config/databaseconection";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 export const metadata = {
   title: "rent It",
   keywords:
@@ -19,6 +21,7 @@ export default function RootLayout({ children }) {
           <Navbar />
           <main>{children}</main>
           <Footer />
+          <ToastContainer />
         </body>
       </html>
     </AuthProvider>
